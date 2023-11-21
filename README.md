@@ -21,15 +21,46 @@ To deal with both operators and token approvals without a combinatorial explosio
 
 ```solidity
 interface IERC6909X is IERC5267 {
-    function temporaryApproveAndCall(address spender, bool operator, uint256 id, uint256 amount, address target, bytes calldata data) external returns (bool);
+    function temporaryApproveAndCall(
+        address spender,
+        bool operator,
+        uint256 id,
+        uint256 amount,
+        address target,
+        bytes calldata data
+    ) external returns (bool);
 
-    function temporaryApproveAndCallBySig(address owner, address spender, bool operator, uint256 id, uint256 amount, address target, bytes calldata data, uint256 deadline, bytes calldata signature) external returns (bool);
+    function temporaryApproveAndCallBySig(
+        address owner,
+        address spender,
+        bool operator,
+        uint256 id,
+        uint256 amount,
+        address target,
+        bytes calldata data,
+        uint256 deadline,
+        bytes calldata signature
+    ) external returns (bool);
 
-    function approveBySig(address owner, address spender, bool operator, uint256 id, uint256 amount, uint256 deadline, bytes calldata signature) external returns (bool);
+    function approveBySig(
+        address owner,
+        address spender,
+        bool operator,
+        uint256 id,
+        uint256 amount,
+        uint256 deadline,
+        bytes calldata signature
+    ) external returns (bool);
 }
 
 interface IERC6909XCallback {
-    function onTemporaryApprove(address owner, bool operator, uint256 id, uint256 amount, bytes calldata data) external returns (bytes4);
+    function onTemporaryApprove(
+        address owner,
+        bool operator,
+        uint256 id,
+        uint256 amount,
+        bytes calldata data
+    ) external returns (bytes4);
 }
 
 /// EIP-712 struct type
