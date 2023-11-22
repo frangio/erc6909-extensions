@@ -73,6 +73,7 @@ contract ERC6909X is ERC6909, IERC6909X, EIP712 {
     }
 
     function _validateApproveAndCallSignature(bool temporary, address owner, address spender, bool operator, uint256 id, uint256 amount, address target, bytes memory data, uint256 nonce, uint256 deadline, bytes memory signature) internal view {
+        require(block.timestamp <= deadline, "expired sig");
         bytes32 messageHash = _hashApproveAndCallMessage(temporary, owner, spender, operator, id, amount, target, data, nonce, deadline);
         require(SignatureChecker.isValidSignatureNow(owner, messageHash, signature), "invalid sig");
     }
