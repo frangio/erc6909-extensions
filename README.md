@@ -2,22 +2,22 @@
 
 This is a proposal for an extension to ERC-6909 intended to address the usability and security issues caused by allowances and operators.
 
-One usability issue is the need to send two separate transactions in order to use a token with a protocol (`approve` followed by a protocol interaction). Another issue is the need to have native token to pay for gas fees, even when there is an actor willing to pay those fees for the user.
+The first usability issue is the need to send two separate transactions in order to use a token with a protocol, given that any such use requires a prior `approve`. The second issue is the need to have native token to pay for gas fees, even if there is an actor willing to pay for the user.
 
-The security issue is the overexposure to smart contract risk that comes from using infinite approvals or operators in order to mitigate the prior usability issues. These methods provide unrestricted access to the user's assets for an indefinite amount of time to smart contracts that may later be found to be insecure.
+The security issues arise from the way applications mitigate the above usability issues, by resorting to infinite approvals and operators. These methods result in overexposure to smart contract risk, since they allow unrestricted access to the user's assets for an indefinite amount of time to smart contracts that may later be found insecure.
 
 The solution proposed here is a combination of 1) temporary approvals as described in EIP-1153, and 2) permits as described in ERC-2612.
 
-The idea of temporary approvals is that a user grants an allowance to a spender, or sets an operator, only for the duration of a specific function call on a target contract. After the call returns the allowance or operator status is reset.
+The idea of temporary approvals is that a user grants an allowance to a spender, or sets an operator, only for the duration of a specific function call on a target contract. After the call returns, the allowance or operator status is reset. This is implemented in `temporaryApproveAndCall`.
 
-As an example, this mechanism can be used to execute a token swap by temporarily approving the amount of tokens that may need to be sold and invoking the swap function in the callback. Even if fewer than the max amount of tokens are sold (due to price movement), the allowance is reset to 0 and the user has no exposure to future issues in the smart contracts involved in the swap.
+As an example, this mechanism can be used to execute a token swap by temporarily approving the amount of tokens that may need to be sold and invoking the swap function as the call. Even if fewer than the max amount of tokens are sold (due to price movement), the allowance is reset to 0 and the user has no exposure to future issues in the smart contracts involved in the swap.
 
-The idea of ERC-20 permits is simply to allow setting a user's allowance as authorized by a signed message. In this proposal, this concept is adapted to the context of ERC-6909 and extended for temporary approve and call with a `temporary` boolean flag and the callback to call.
+The idea of ERC-20 permits is simply to provide an alternative to `approve` that is authorized by a signed message instead of a transaction coming directly from the user; this signed message can be submitted by a thrid party. In this proposal, this concept is adapted to the multi-token context of ERC-6909, and is combined with the option to make its effects temporary in the context of a function call. The temporary option is implemented in `temporaryApproveAndCallBySig`, and the permanent option is implemented in `approveBySig` (note that it is not coupled to a call in this case). The signed message includes a `temporary` boolean flag, and if this flag is true also includes the call to be made, specified by `target` and `data`.
 
-To deal with both operators and token approvals without a combinatorial explosion of functions, all operations in this extension deal with both simultaneously, with the following semantics.
+To deal with both operators and token approvals without too many functions, all operations in this extension deal with both simultaneously with parameters `operator`, `id`, and `amount` with the following semantics:
 
-- `operator = true`, `id = 0`, `amount = 0`: The `spender` is set as an operator for the owner.
-- `operator = false`: The `spender` is given allowance `amount` for token `id`.
+- `operator = false`: The `spender` is given allowance for one token as specified by `amount` and `id`.
+- `operator = true`: The `spender` is set as an operator for the owner. `amount` and `id` must be 0 and are otherwise ignored.
 
 ```solidity
 interface IERC6909X is IERC5267 {
